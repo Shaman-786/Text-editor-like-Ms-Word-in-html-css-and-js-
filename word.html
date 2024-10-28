@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Text Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Basic Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad, #3498db);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        /* Editor Container Styling */
+        .editor-container {
+            width: 90%;
+            max-width: 900px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Toolbar Styling */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f4f4f4;
+            padding: 10px 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .toolbar button, .toolbar select {
+            background: #ffffff;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toolbar button i {
+            font-size: 18px;
+        }
+
+        /* Button Ripple Effect */
+        .toolbar button::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.4s ease;
+        }
+
+        .toolbar button:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0;
+        }
+
+        /* Hover and Active States */
+        .toolbar button:hover {
+            background-color: #3498db;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .toolbar button.active {
+            background-color: #2980b9;
+            color: #fff;
+        }
+
+        .toolbar select {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        /* Editor Area */
+        .editor {
+            width: 100%;
+            height: 400px;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-y: auto;
+            background-color: #ffffff;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        .editor:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        /* Fade-in Animation */
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .toolbar button, .toolbar select {
+                font-size: 14px;
+                padding: 8px;
+                margin: 3px;
+            }
+            .editor {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Editor Container -->
+<div class="editor-container">
+    <!-- Toolbar positioned above the text editor -->
+    <div class="toolbar">
+        <select id="font-size" title="Font Size">
+            <option value="1">Small</option>
+            <option value="3" selected>Normal</option>
+            <option value="5">Large</option>
+        </select>
+        <button onclick="format('bold')" title="Bold"><i class="fas fa-bold"></i></button>
+        <button onclick="format('italic')" title="Italic"><i class="fas fa-italic"></i></button>
+        <button onclick="format('underline')" title="Underline"><i class="fas fa-underline"></i></button>
+        <button onclick="format('justifyLeft')" title="Align Left"><i class="fas fa-align-left"></i></button>
+        <button onclick="format('justifyCenter')" title="Center"><i class="fas fa-align-center"></i></button>
+        <button onclick="format('justifyRight')" title="Align Right"><i class="fas fa-align-right"></i></button>
+        <button onclick="format('insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+        <button onclick="format('insertOrderedList')" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+        <button onclick="format('removeFormat')" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
+        <button onclick="changeCase('uppercase')" title="Uppercase">A<sup>^</sup></button>
+        <button onclick="changeCase('lowercase')" title="Lowercase">a<sub>v</sub></button>
+        <button onclick="changeCase('titlecase')" title="Title Case">Aa</button>
+    </div>
+
+    <!-- Editable Text Area -->
+    <div id="editor" class="editor" contenteditable="true">
+        Start typing here...
+    </div>
+</div>
+
+<script>
+    // Function to apply text formatting commands
+    function format(command, value = null) {
+        document.execCommand(command, false, value);
+        updateToolbar();
+    }
+
+    // Change font size
+    document.getElementById('font-size').addEventListener('change', function() {
+        format('fontSize', this.value);
+    });
+
+    // Change font case
+    function changeCase(caseType) {
+        const selectedText = window.getSelection().toString();
+        let newText;
+
+        if (caseType === 'uppercase') {
+            newText = selectedText.toUpperCase();
+        } else if (caseType === 'lowercase') {
+            newText = selectedText.toLowerCase();
+        } else if (caseType === 'titlecase') {
+            newText = selectedText.split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+        }
+
+        document.execCommand('insertText', false, newText);
+        updateToolbar();
+    }
+
+    // Update toolbar button styles based on current selection
+    function updateToolbar() {
+        const buttons = document.querySelectorAll('.toolbar button');
+        buttons.forEach(button => button.classList.remove('active'));
+
+        if (document.queryCommandState('bold')) {
+            document.querySelector('button[title="Bold"]').classList.add('active');
+        }
+        if (document.queryCommandState('italic')) {
+            document.querySelector('button[title="Italic"]').classList.add('active');
+        }
+        if (document.queryCommandState('underline')) {
+            document.querySelector('button[title="Underline"]').classList.add('active');
+        }
+    }
+
+    // Update toolbar when the editor's content or selection changes
+    document.getElementById('editor').addEventListener('input', updateToolbar);
+    document.getElementById('editor').addEventListener('click', updateToolbar);
+</script>
+
+</body>
+</html>
